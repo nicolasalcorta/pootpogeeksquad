@@ -8,4 +8,4 @@
 - Novelli, Tomas Ignacio     — LU: 1164878
 
 
-Para desarrollar el proyecto, elegimos la propuesta B "Clínica Veterinaria". En este repositorio adjuntaremos tanto código fuente implementado en Java, como informe escrito en documento word / visualizado en PDF. [Informe aquí.]([https://docs.google.com/document/d/1EuUUv2O3vi98p8nJWFUZkK3Lhp79A5bARw5ROojmTrQ/edit?usp=sharing])
+Para desarrollar el proyecto, elegimos la propuesta B "Clínica Veterinaria". En este repositorio adjuntaremos tanto código fuente implementado en Java, como informe escrito en documento word / visualizado en PDF. [Informe](https://docs.google.com/document/d/1EuUUv2O3vi98p8nJWFUZkK3Lhp79A5bARw5ROojmTrQ/edit?usp=sharing). 
