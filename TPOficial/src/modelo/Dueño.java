@@ -18,8 +18,8 @@ public class Dueño extends Persona {
 		this.mascotas = new ArrayList<>();
 	}
 	
-	public void agregarMascota(Mascota mascotas) {
-		if(mascota != null && !mascotas.contians(mascota)) {
+	public void agregarMascota(Mascota mascota) {
+		if(mascota != null && !mascotas.contains(mascota)) {
 			mascotas.add(mascota);
 		}
 	}
@@ -44,7 +44,7 @@ public class Dueño extends Persona {
 		this.tienePlanSalud = tienePlanSalud;
 	}
 	
-	public List<Macota> getMascotas(){
+	public List<Mascota> getMascotas(){
 		return Collections.unmodifiableList(mascotas);
 	}
 }
