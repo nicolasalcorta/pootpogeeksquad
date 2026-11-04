@@ -3,53 +3,54 @@ package modelo;
 import java.time.LocalDate;
 
 public class VacunaAplicada {
-	private Vacuna vacuna; 
-	private String nombreVacuna; 
-	private LocalDate fechaAplicacion; 
-	private String lote;
-	private LocalDate fechaProximoRefuerzo;
-	
-	public VacunaAplicada(Vacuna vacuna, String lote, LocalDate fechaProximoRefuerzo) {
-		if (lote == null || lote.trim().isEmpty()) { 
-			throw new IllegalArgumentException("El número de lote es obligatorio."); 
-			} 
-		this.vacuna = vacuna; 
-		this.nombreVacuna = (vacuna != null) ? vacuna.getNombre() : "Vacuna"; 
-		this.fechaAplicacion = LocalDate.now(); 
+	private final Vacuna vacuna;
+	private final Lote lote;
+	private final LocalDate fechaAplicacion;
+	private final LocalDate fechaProximoRefuerzo;
+
+	public VacunaAplicada(Vacuna vacuna, Lote lote, LocalDate fechaProximoRefuerzo) {
+		if (vacuna == null || lote == null) {
+			throw new IllegalArgumentException("La vacuna y el lote son obligatorios.");
+		}
+		this.vacuna = vacuna;
 		this.lote = lote;
-		this.fechaProximoRefuerzo = fechaProximoRefuerzo; 
+		this.fechaAplicacion = LocalDate.now();
+		this.fechaProximoRefuerzo = fechaProximoRefuerzo;
 	}
-	
-	// Método de negocio (GRASP Experto): Verifica si requiere recordatorio (7 días antes del refuerzo) 
-	public boolean requiereRecordatorio() {
-		if (fechaProximoRefuerzo == null) return false; 
-		LocalDate hoy = LocalDate.now(); 
-		return !hoy.isBefore(fechaProximoRefuerzo.minusDays(7)) && hoy.isBefore(fechaProximoRefuerzo); } 
-	
-	// Método de negocio: Verifica si la vacuna está vencida (pasados 30 días del refuerzo sin aplicar) 
-	public boolean estaVencida() { 
-		if (fechaProximoRefuerzo == null) return false; 
-		return LocalDate.now().isAfter(fechaProximoRefuerzo.plusDays(30)); } 
-	
-	// Getters y Setters 
+
+	public boolean requiereRecordatorio(LocalDate hoy) {
+		if (fechaProximoRefuerzo == null) return false;
+		return !hoy.isBefore(fechaProximoRefuerzo.minusDays(7)) && hoy.isBefore(fechaProximoRefuerzo);
+	}
+
+	public boolean estaVencida(LocalDate hoy) {
+		if (fechaProximoRefuerzo == null) return false;
+		return hoy.isAfter(fechaProximoRefuerzo.plusDays(30));
+	}
+
 	public Vacuna getVacuna() {
-		return vacuna; 
-	} 
-	
-	public String getNombreVacuna() {
-		return nombreVacuna; 
-	} 
-	public LocalDate getFechaAplicacion() {
-		return fechaAplicacion; 
-	} 
-	public String getLote() {
-		return lote; 
+		return vacuna;
 	}
-	public LocalDate getFechaProximoRefuerzo() { 
-		return fechaProximoRefuerzo; 
-	} 
-	
-	@Override public String toString() { 
-		return "Vacuna: " + nombreVacuna + " [Lote: " + lote + "] - Aplicada: " + fechaAplicacion + " - Próximo refuerzo: " + fechaProximoRefuerzo; 
+
+	public String getNombreVacuna() {
+		return vacuna.getNombre();
+	}
+
+	public Lote getLote() {
+		return lote;
+	}
+
+	public LocalDate getFechaAplicacion() {
+		return fechaAplicacion;
+	}
+
+	public LocalDate getFechaProximoRefuerzo() {
+		return fechaProximoRefuerzo;
+	}
+
+	@Override
+	public String toString() {
+		return "Vacuna: " + vacuna.getNombre() + " [Lote: " + lote.getNumeroLote() + "] - Aplicada: " + fechaAplicacion
+				+ " - Próximo refuerzo: " + fechaProximoRefuerzo;
 	}
 }

@@ -1,50 +1,66 @@
 package modelo;
 
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class Dueño extends Persona {
+	public static final int AUSENCIAS_PARA_SENIA = 3;
 	private String email;
 	private boolean tienePlanSalud;
+	private int ausenciasConsecutivas;
 	private List<Mascota> mascotas;
-	
+
 	public Dueño(String id, String nombre, String apellido, String dni, String telefono) {
 		super(id, nombre, apellido, dni, telefono);
-		this.email = email;
-		this.tienePlanSalud = tienePlanSalud;
+		this.tienePlanSalud = false;
+		this.ausenciasConsecutivas = 0;
 		this.mascotas = new ArrayList<>();
 	}
-	
+
 	public void agregarMascota(Mascota mascota) {
-		if(mascota != null && !mascotas.contains(mascota)) {
+		if (mascota != null && !mascotas.contains(mascota)) {
 			mascotas.add(mascota);
 		}
 	}
-	
-	public double getPorcentajeDescuento(){
-		return tienePlanSalud ? 0.15 : 0.0;	
+
+	public void quitarMascota(Mascota mascota) {
+		mascotas.remove(mascota);
 	}
-	
-	public String getEmail(){
+
+	public void registrarAusencia() {
+		ausenciasConsecutivas++;
+	}
+
+	public void reiniciarAusencias() {
+		ausenciasConsecutivas = 0;
+	}
+
+	public boolean debePagarSenia() {
+		return ausenciasConsecutivas >= AUSENCIAS_PARA_SENIA;
+	}
+
+	public int getAusenciasConsecutivas() {
+		return ausenciasConsecutivas;
+	}
+
+	public String getEmail() {
 		return email;
 	}
-	
-	public void setEmail(String email){
+
+	public void setEmail(String email) {
 		this.email = email;
 	}
-	
-	public boolean isTienePlanSalud(){
+
+	public boolean isTienePlanSalud() {
 		return tienePlanSalud;
 	}
-	
-	public void setTienePlanSalud(boolean tienePlanSalud){
+
+	public void setTienePlanSalud(boolean tienePlanSalud) {
 		this.tienePlanSalud = tienePlanSalud;
 	}
-	
-	public List<Mascota> getMascotas(){
+
+	public List<Mascota> getMascotas() {
 		return Collections.unmodifiableList(mascotas);
 	}
 }

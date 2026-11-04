@@ -1,12 +1,12 @@
 package modelo;
 
-public class Persona {
+public abstract class Persona {
 	private String id;
 	private String nombre;
 	private String apellido;
 	private String dni;
 	private String telefono;
-	
+
 	public Persona(String id, String nombre, String apellido, String dni, String telefono) {
 		if(dni == null || dni.trim().isEmpty()) {
 			throw new IllegalArgumentException("EL DNI es un campo obligatorio");
@@ -17,7 +17,7 @@ public class Persona {
 		this.dni = dni;
 		this.telefono = telefono;
 	}
-	
+
 	public String getNombreCompleto(){
 		return nombre + " " + apellido;
 	}
@@ -41,5 +41,5 @@ public class Persona {
 	public String getTelefono() {
 		return telefono;
 	}
-	
+
 }
