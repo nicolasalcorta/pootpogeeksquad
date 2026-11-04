@@ -2,6 +2,8 @@ package modelo;
 
 import java.time.LocalDate;
 
+import excepciones.StockInsuficienteException;
+
 public class Lote implements Comparable<Lote> {
 	private String numeroLote;
 	private LocalDate fechaVencimiento;
@@ -22,12 +24,12 @@ public class Lote implements Comparable<Lote> {
 	public boolean estaVencido(LocalDate hoy) {
 		return hoy.isAfter(fechaVencimiento);
 	}
-	public void descontar(int cant) {
+	public void descontar(int cant) throws StockInsuficienteException {
 		if (cant <= 0) {
 			throw new IllegalArgumentException("La cantidad a descontar debe ser mayor a cero.");
 		}
 		if (cant > this.cantidad) {
-			throw new IllegalStateException("Cantidad insuficiente disponible en el lote " + numeroLote);
+			throw new StockInsuficienteException("Cantidad insuficiente disponible en el lote " + numeroLote);
 		}
 		this.cantidad -= cant;
 	}

@@ -7,8 +7,8 @@ public class Perro extends Mascota {
 	private String tamanio;
 
 	public Perro(String idMascota, String nombre, String raza, String sexo, LocalDate fechaNacimiento,
-				 double pesoActual, Dueño dueño, String numeroChip, String tamanio) {
-		super(idMascota, nombre, raza, sexo, fechaNacimiento, pesoActual, dueño);
+				 double pesoActual, Duenio duenio, String numeroChip, String tamanio) {
+		super(idMascota, nombre, raza, sexo, fechaNacimiento, pesoActual, duenio);
 		this.numeroChip = numeroChip;
 		this.tamanio = tamanio;
 	}
@@ -19,7 +19,7 @@ public class Perro extends Mascota {
 	}
 
 	@Override
-	public String getDescripcionEspecie() {
+	public String getInfoEspecie() {
 		return "Canino [Chip: " + (numeroChip != null ? numeroChip : "Sin Chip") + ", Tamaño: " + tamanio + "]";
 	}
 
@@ -27,7 +27,7 @@ public class Perro extends Mascota {
 		return numeroChip;
 	}
 
-	public String getTamaño() {
+	public String getTamanio() {
 		return tamanio;
 	}
 }

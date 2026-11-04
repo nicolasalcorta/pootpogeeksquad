@@ -1,7 +1,8 @@
 package controlador;
 
+import excepciones.FacturaAnuladaException;
 import modelo.Consulta;
-import modelo.Dueño;
+import modelo.Duenio;
 import modelo.Factura;
 import modelo.MedioPago;
 import modelo.NotaCredito;
@@ -33,19 +34,19 @@ public class GestorFacturacion {
         if (consulta.getTurno() == null) {
             throw new IllegalStateException("La consulta no tiene un turno asociado.");
         }
-        Dueño dueño = consulta.getTurno().getMascota().getDueño();
-        if (dueño == null) {
+        Duenio duenio = consulta.getTurno().getMascota().getDuenio();
+        if (duenio == null) {
             throw new IllegalStateException("La mascota no tiene dueño responsable.");
         }
 
-        Factura factura = new Factura(consulta, dueño, medioPago);
+        Factura factura = new Factura(consulta, duenio, medioPago);
 
         TipoAtencion tipo = consulta.getTurno().getTipo();
-        factura.agregarLinea("Consulta (" + tipo + ")", 1, tipo.getPreciobase());
+        factura.agregarLinea("Consulta (" + tipo + ")", 1, tipo.getPrecioBase());
 
         for (Tratamiento t : consulta.getTratamientos()) {
             Producto medicamento = t.getMedicamento();
-            factura.agregarLinea(medicamento.getNombre(), 1, medicamento.getPrecio());
+            factura.agregarLinea(medicamento.getNombre(), t.getCantidad(), medicamento.getPrecio());
         }
 
         factura.calcularTotal();
@@ -54,7 +55,7 @@ public class GestorFacturacion {
         return factura;
     }
 
-    public NotaCredito anularFactura(Factura factura) {
+    public NotaCredito anularFactura(Factura factura) throws FacturaAnuladaException {
         if (factura == null) {
             throw new IllegalArgumentException("La factura no puede ser nula.");
         }

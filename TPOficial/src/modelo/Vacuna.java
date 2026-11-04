@@ -13,12 +13,26 @@ public class Vacuna {
 	private String nombre;
 	private int edadMinimaMeses;
 	private final Map<Especie, Integer> intervalosPorEspecie;
+	private final Producto insumo; // producto de stock del que salen los lotes de esta vacuna
 
-	public Vacuna(String idVacuna, String nombre, int edadMinimaMeses) {
+	public Vacuna(String idVacuna, String nombre, int edadMinimaMeses, Producto insumo) {
+		if (insumo == null) {
+			throw new IllegalArgumentException("La vacuna debe estar asociada a un producto de stock.");
+		}
 		this.idVacuna = idVacuna;
 		this.nombre = nombre;
 		this.edadMinimaMeses = edadMinimaMeses;
+		this.insumo = insumo;
 		this.intervalosPorEspecie = new EnumMap<>(Especie.class);
+	}
+
+	/** Indica si el lote pertenece al producto de esta vacuna. */
+	public boolean usaLote(Lote lote) {
+		return lote != null && insumo.getLotes().contains(lote);
+	}
+
+	public Producto getInsumo() {
+		return insumo;
 	}
 
 		public void agregarEspecie(Especie especie, int intervaloRefuerzoMeses) {

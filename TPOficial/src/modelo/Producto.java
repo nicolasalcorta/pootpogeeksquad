@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import excepciones.StockInsuficienteException;
+
 
 public class Producto {
     private final String codigo;
@@ -59,12 +61,12 @@ public class Producto {
         return cantidad > 0 && getStockActual() >= cantidad;
     }
 
-    public void descontarStock(int cantidad) {
+    public void descontarStock(int cantidad) throws StockInsuficienteException {
         if (cantidad <= 0) {
             throw new IllegalArgumentException("La cantidad a descontar debe ser mayor a cero.");
         }
         if (!tieneStock(cantidad)) {
-            throw new IllegalStateException("Stock insuficiente de " + nombre + ": se piden " + cantidad
+            throw new StockInsuficienteException("Stock insuficiente de " + nombre + ": se piden " + cantidad
                     + " y hay " + getStockActual() + " disponibles.");
         }
         List<Lote> utilizables = new ArrayList<>();

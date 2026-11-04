@@ -35,8 +35,8 @@ public class GestorVacunas {
 
     public void emitirRecordatorios() {
         for (Pendiente p : buscarPendientes()) {
-            if (p.mascota.getDueño() != null) {
-                notificador.notificar(p.mascota.getDueño(),
+            if (p.mascota.getDuenio() != null) {
+                notificador.notificar(p.mascota.getDuenio(),
                         "Recordatorio: el refuerzo de la vacuna " + p.vacuna.getNombreVacuna() + " de " + p.mascota.getNombre()
                                 + " vence el " + p.vacuna.getFechaProximoRefuerzo().format(FORMATO) + ".");
             }

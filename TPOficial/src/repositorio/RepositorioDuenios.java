@@ -2,10 +2,10 @@ package repositorio;
 
 import java.util.List;
 
-import modelo.Dueño;
+import modelo.Duenio;
 
 public interface RepositorioDuenios {
-    void guardar(Dueño dueño);
-    Dueño buscarPorDni(String dni);
-    List<Dueño> listarTodos();
+    void guardar(Duenio duenio);
+    Duenio buscarPorDni(String dni);
+    List<Duenio> listarTodos();
 }

@@ -1,6 +1,6 @@
 package controlador;
 
-import modelo.Dueño;
+import modelo.Duenio;
 import modelo.Mascota;
 import repositorio.RepositorioDuenios;
 import repositorio.RepositorioMascotas;
@@ -17,7 +17,7 @@ public class GestorPacientes {
         this.repositorioMascotas = repoMascotas;
     }
 
-    public void registrarDuenio(Dueño duenio) {
+    public void registrarDuenio(Duenio duenio) {
         if (duenio == null) {
             throw new IllegalArgumentException("El dueño no puede ser nulo.");
         }
@@ -27,7 +27,7 @@ public class GestorPacientes {
         repositorioDuenios.guardar(duenio);
     }
 
-    public void registrarMascota(Dueño duenio, Mascota mascota) {
+    public void registrarMascota(Duenio duenio, Mascota mascota) {
         if (duenio == null || mascota == null) {
             throw new IllegalArgumentException("El dueño y la mascota son obligatorios.");
         }
@@ -37,9 +37,9 @@ public class GestorPacientes {
         if (repositorioMascotas.buscarPorId(mascota.getIdMascota()) != null) {
             throw new IllegalArgumentException("Ya existe una mascota con el id " + mascota.getIdMascota() + ".");
         }
-        if (mascota.getDueño() == null) {
-            mascota.setDueño(duenio);
-        } else if (mascota.getDueño() != duenio) {
+        if (mascota.getDuenio() == null) {
+            mascota.setDuenio(duenio);
+        } else if (mascota.getDuenio() != duenio) {
             throw new IllegalArgumentException("La mascota pertenece a otro dueño.");
         }
         duenio.agregarMascota(mascota);
@@ -47,18 +47,18 @@ public class GestorPacientes {
         repositorioDuenios.guardar(duenio);
     }
 
-    public void transferirMascota(Mascota mascota, Dueño nuevoDuenio) {
+    public void transferirMascota(Mascota mascota, Duenio nuevoDuenio) {
         if (mascota == null || nuevoDuenio == null) {
             throw new IllegalArgumentException("La mascota y el nuevo dueño son obligatorios.");
         }
         if (repositorioDuenios.buscarPorDni(nuevoDuenio.getDni()) == null) {
             throw new IllegalArgumentException("El nuevo dueño no está registrado.");
         }
-        Dueño anterior = mascota.getDueño();
+        Duenio anterior = mascota.getDuenio();
         if (anterior == nuevoDuenio) {
             throw new IllegalArgumentException("La mascota ya pertenece a ese dueño.");
         }
-        mascota.cambiarDueño(nuevoDuenio);
+        mascota.cambiarDuenio(nuevoDuenio);
         repositorioMascotas.guardar(mascota);
         repositorioDuenios.guardar(nuevoDuenio);
         if (anterior != null) {
@@ -66,7 +66,7 @@ public class GestorPacientes {
         }
     }
 
-    public Dueño buscarDuenioPorDni(String dni) {
+    public Duenio buscarDuenioPorDni(String dni) {
         return repositorioDuenios.buscarPorDni(dni);
     }
 }

@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Dueño extends Persona {
+public class Duenio extends Persona {
 	public static final int AUSENCIAS_PARA_SENIA = 3;
-	private String email;
+	private String mail;
 	private boolean tienePlanSalud;
 	private int ausenciasConsecutivas;
 	private List<Mascota> mascotas;
 
-	public Dueño(String id, String nombre, String apellido, String dni, String telefono) {
+	public Duenio(String id, String nombre, String apellido, String dni, String telefono) {
 		super(id, nombre, apellido, dni, telefono);
 		this.tienePlanSalud = false;
 		this.ausenciasConsecutivas = 0;
@@ -44,12 +44,12 @@ public class Dueño extends Persona {
 		return ausenciasConsecutivas;
 	}
 
-	public String getEmail() {
-		return email;
+	public String getMail() {
+		return mail;
 	}
 
-	public void setEmail(String email) {
-		this.email = email;
+	public void setMail(String mail) {
+		this.mail = mail;
 	}
 
 	public boolean isTienePlanSalud() {

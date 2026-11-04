@@ -1,7 +1,11 @@
 package controlador;
 
+import excepciones.PesoNoRegistradoException;
+import excepciones.StockInsuficienteException;
+import excepciones.VacunaNoAplicableException;
+
 import modelo.Consulta;
-import modelo.Dueño;
+import modelo.Duenio;
 import modelo.EstadoTurno;
 import modelo.HistoriaClinica;
 import modelo.Lote;
@@ -50,13 +54,13 @@ public class GestorConsultas {
         consulta.setVeterinario(veterinario);
         consulta.setTurno(turno);
         if (pesoDelDia > 0) {
-            mascota.setPesoActual(pesoDelDia);
+            mascota.actualizarPeso(pesoDelDia);
         }
 
-        turno.setEstado(EstadoTurno.ATENDIDO);
-        Dueño dueño = mascota.getDueño();
-        if (dueño != null) {
-            dueño.reiniciarAusencias();
+        turno.marcarAtendido();
+        Duenio duenio = mascota.getDuenio();
+        if (duenio != null) {
+            duenio.reiniciarAusencias();
         }
         repositorioMascotas.guardar(mascota);
         return consulta;
@@ -73,21 +77,24 @@ public class GestorConsultas {
     }
 
     public Tratamiento agregarTratamiento(Consulta consulta, Veterinario veterinario, Producto medicamento,
-                                          String dosis, String frecuencia, int duracionDias) {
+                                          int cantidad, String dosis, String frecuencia, int duracionDias)
+            throws PesoNoRegistradoException, StockInsuficienteException {
         validarConsultaDelVeterinario(consulta, veterinario);
         if (medicamento == null) {
             throw new IllegalArgumentException("El medicamento es obligatorio.");
         }
         // Primero el peso (lo valida Consulta y lanza PesoNoRegistradoException); después el stock.
-        if (consulta.tienePesoRegistrado() && !medicamento.tieneStock(1)) {
-            throw new IllegalStateException("No hay stock disponible de " + medicamento.getNombre() + ".");
+        if (consulta.tienePesoRegistrado() && !medicamento.tieneStock(cantidad)) {
+            throw new StockInsuficienteException("No hay stock suficiente de " + medicamento.getNombre()
+                    + ": se piden " + cantidad + " y hay " + medicamento.getStockActual() + ".");
         }
-        Tratamiento tratamiento = consulta.agregarTratamiento(medicamento, dosis, frecuencia, duracionDias);
+        Tratamiento tratamiento = consulta.agregarTratamiento(medicamento, cantidad, dosis, frecuencia, duracionDias);
         repositorioMascotas.guardar(mascotaDe(consulta));
         return tratamiento;
     }
 
-    public VacunaAplicada aplicarVacuna(Consulta consulta, Veterinario veterinario, Vacuna vacuna, Lote lote) {
+    public VacunaAplicada aplicarVacuna(Consulta consulta, Veterinario veterinario, Vacuna vacuna, Lote lote)
+            throws VacunaNoAplicableException {
         validarConsultaDelVeterinario(consulta, veterinario);
         VacunaAplicada aplicada = consulta.aplicarVacuna(vacuna, lote);
         repositorioMascotas.guardar(mascotaDe(consulta));

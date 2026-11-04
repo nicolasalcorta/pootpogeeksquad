@@ -1,12 +1,12 @@
 package notificacion;
 
-import modelo.Dueño;
+import modelo.Duenio;
 
 public class NotificadorConsola implements Notificador {
 
     @Override
-    public void notificar(Dueño dueño, String mensaje) {
-        String destinatario = (dueño != null) ? dueño.getNombreCompleto() : "(sin destinatario)";
+    public void notificar(Duenio duenio, String mensaje) {
+        String destinatario = (duenio != null) ? duenio.getNombreCompleto() : "(sin destinatario)";
         System.out.println("[NOTIFICACIÓN para " + destinatario + "] " + mensaje);
     }
 }
