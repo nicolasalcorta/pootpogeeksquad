@@ -6,8 +6,8 @@ public class Conejo extends Mascota {
 	private boolean tieneJaula;
 
 	public Conejo(String idMascota, String nombre, String raza, String sexo, LocalDate fechaNacimiento,
-				  double pesoActual, Dueño dueño, boolean tieneJaula) {
-		super(idMascota, nombre, raza, sexo, fechaNacimiento, pesoActual, dueño);
+				  double pesoActual, Duenio duenio, boolean tieneJaula) {
+		super(idMascota, nombre, raza, sexo, fechaNacimiento, pesoActual, duenio);
 		this.tieneJaula = tieneJaula;
 	}
 
@@ -17,7 +17,7 @@ public class Conejo extends Mascota {
 	}
 
 	@Override
-	public String getDescripcionEspecie() {
+	public String getInfoEspecie() {
 		return "Conejo [Tiene jaula: " + (tieneJaula ? "Sí" : "No") + "]";
 	}
 

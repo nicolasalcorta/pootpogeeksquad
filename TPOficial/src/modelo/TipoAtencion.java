@@ -6,11 +6,11 @@ public enum TipoAtencion {
 	CIRUGIA(120, 25000.0);
 	
 	private final int duracionMinutos;
-	private final double preciobase;
+	private final double precioBase;
 	
-	private TipoAtencion(int duracionMinutos, double preciobase) {
+	private TipoAtencion(int duracionMinutos, double precioBase) {
 		this.duracionMinutos = duracionMinutos;
-		this.preciobase = preciobase;
+		this.precioBase = precioBase;
 	}
 
 	//getters
@@ -18,8 +18,8 @@ public enum TipoAtencion {
 		return duracionMinutos;
 	}
 
-	public double getPreciobase() {
-		return preciobase;
+	public double getPrecioBase() {
+		return precioBase;
 	}
 	
 	

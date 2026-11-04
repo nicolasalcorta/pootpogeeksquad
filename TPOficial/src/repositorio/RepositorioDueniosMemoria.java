@@ -5,25 +5,25 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import modelo.Dueño;
+import modelo.Duenio;
 
 public class RepositorioDueniosMemoria implements RepositorioDuenios {
-    private final Map<String, Dueño> items = new LinkedHashMap<>();
+    private final Map<String, Duenio> items = new LinkedHashMap<>();
 
     @Override
-    public void guardar(Dueño elemento) {
+    public void guardar(Duenio elemento) {
         if (elemento != null) {
             items.put(elemento.getDni(), elemento);
         }
     }
 
     @Override
-    public Dueño buscarPorDni(String clave) {
+    public Duenio buscarPorDni(String clave) {
         return items.get(clave);
     }
 
     @Override
-    public List<Dueño> listarTodos() {
+    public List<Duenio> listarTodos() {
         return new ArrayList<>(items.values());
     }
 }

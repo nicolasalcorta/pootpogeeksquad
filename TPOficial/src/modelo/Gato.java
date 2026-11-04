@@ -6,8 +6,8 @@ public class Gato extends Mascota {
 	private boolean esInterior;
 
 	public Gato(String idMascota, String nombre, String raza, String sexo, LocalDate fechaNacimiento,
-				double pesoActual, Dueño dueño, boolean esInterior) {
-		super(idMascota, nombre, raza, sexo, fechaNacimiento, pesoActual, dueño);
+				double pesoActual, Duenio duenio, boolean esInterior) {
+		super(idMascota, nombre, raza, sexo, fechaNacimiento, pesoActual, duenio);
 		this.esInterior = esInterior;
 	}
 
@@ -17,7 +17,7 @@ public class Gato extends Mascota {
 	}
 
 	@Override
-	public String getDescripcionEspecie() {
+	public String getInfoEspecie() {
 		return "Felino [Hábito: " + (esInterior ? "Exclusivo de Interior" : "Acceso al Exterior") + "]";
 	}
 

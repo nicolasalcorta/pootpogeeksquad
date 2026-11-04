@@ -1,7 +1,7 @@
 package notificacion;
 
-import modelo.Dueño;
+import modelo.Duenio;
 
 public interface Notificador {
-    void notificar(Dueño dueño, String mensaje);
+    void notificar(Duenio duenio, String mensaje);
 }

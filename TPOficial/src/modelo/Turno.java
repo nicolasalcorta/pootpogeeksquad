@@ -63,7 +63,21 @@ public class Turno {
 		if (anticipacion.compareTo(Duration.ofHours(HORAS_CANCELACION_SIN_CARGO)) >= 0) {
 			return 0.0;
 		}
-		return tipo.getPreciobase() * PORCENTAJE_CANCELACION_TARDIA;
+		return tipo.getPrecioBase() * PORCENTAJE_CANCELACION_TARDIA;
+	}
+
+	public void marcarAtendido() {
+		if (estado != EstadoTurno.PROGRAMADO) {
+			throw new IllegalStateException("Solo se puede atender un turno programado.");
+		}
+		this.estado = EstadoTurno.ATENDIDO;
+	}
+
+	public void marcarSeniaPagada() {
+		if (estado != EstadoTurno.PROGRAMADO) {
+			throw new IllegalStateException("Solo se puede registrar la seña de un turno programado.");
+		}
+		this.seniaPagada = true;
 	}
 
 	public void marcarAusente() {

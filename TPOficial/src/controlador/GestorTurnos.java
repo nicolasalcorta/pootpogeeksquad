@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import excepciones.TurnoNoDisponibleException;
-import modelo.Dueño;
+import modelo.Duenio;
 import modelo.EstadoTurno;
 import modelo.Mascota;
 import modelo.TipoAtencion;
@@ -50,7 +50,7 @@ public class GestorTurnos {
         return Collections.unmodifiableList(veterinarios);
     }
 
-    public Turno asignarTurno(Mascota mascota, Veterinario veterinario, LocalDateTime fechaHora, TipoAtencion tipo) {
+    public Turno asignarTurno(Mascota mascota, Veterinario veterinario, LocalDateTime fechaHora, TipoAtencion tipo) throws TurnoNoDisponibleException {
         if (mascota == null || veterinario == null || fechaHora == null || tipo == null) {
             throw new IllegalArgumentException("La mascota, el veterinario, la fecha y el tipo de atención son obligatorios.");
         }
@@ -66,8 +66,8 @@ public class GestorTurnos {
                     + " se superpone con otro turno de " + veterinario.getNombreCompleto() + ".");
         }
 
-        Dueño dueño = mascota.getDueño();
-        if (dueño != null && dueño.debePagarSenia()) {
+        Duenio duenio = mascota.getDuenio();
+        if (duenio != null && duenio.debePagarSenia()) {
             nuevo.setSeniaPagada(false);
         }
         repositorioTurnos.guardar(nuevo);
@@ -78,18 +78,15 @@ public class GestorTurnos {
         if (turno == null) {
             throw new IllegalArgumentException("El turno no puede ser nulo.");
         }
-        if (turno.getEstado() != EstadoTurno.PROGRAMADO) {
-            throw new IllegalStateException("Solo se puede registrar la seña de un turno programado.");
-        }
-        turno.setSeniaPagada(true);
+        turno.marcarSeniaPagada();
         repositorioTurnos.guardar(turno);
     }
 
-    public Turno asignarUrgencia(Mascota mascota, TipoAtencion tipo) {
+    public Turno asignarUrgencia(Mascota mascota, TipoAtencion tipo) throws TurnoNoDisponibleException {
         return asignarUrgencia(mascota, tipo, LocalDateTime.now());
     }
 
-    Turno asignarUrgencia(Mascota mascota, TipoAtencion tipo, LocalDateTime ahora) {
+    Turno asignarUrgencia(Mascota mascota, TipoAtencion tipo, LocalDateTime ahora) throws TurnoNoDisponibleException {
         if (mascota == null || tipo == null || ahora == null) {
             throw new IllegalArgumentException("La mascota, el tipo de atención y el momento son obligatorios.");
         }
@@ -135,16 +132,16 @@ public class GestorTurnos {
             LocalDateTime anterior = d.getFechaHora();
             d.reprogramar(e.getValue());
             repositorioTurnos.guardar(d);
-            Dueño dueño = d.getMascota().getDueño();
-            if (dueño != null) {
-                notificador.notificar(dueño, "Su turno del " + anterior.format(FORMATO) + " para " + d.getMascota().getNombre()
+            Duenio duenio = d.getMascota().getDuenio();
+            if (duenio != null) {
+                notificador.notificar(duenio, "Su turno del " + anterior.format(FORMATO) + " para " + d.getMascota().getNombre()
                         + " fue reprogramado al " + e.getValue().format(FORMATO) + " por una urgencia.");
             }
         }
         return urgente;
     }
 
-    public void reprogramarTurno(Turno turno, LocalDateTime nuevaFechaHora) {
+    public void reprogramarTurno(Turno turno, LocalDateTime nuevaFechaHora) throws TurnoNoDisponibleException {
         if (turno == null || nuevaFechaHora == null) {
             throw new IllegalArgumentException("El turno y la nueva fecha son obligatorios.");
         }
@@ -179,9 +176,9 @@ public class GestorTurnos {
             throw new IllegalArgumentException("El turno no puede ser nulo.");
         }
         turno.marcarAusente();
-        Dueño dueño = turno.getMascota().getDueño();
-        if (dueño != null) {
-            dueño.registrarAusencia();
+        Duenio duenio = turno.getMascota().getDuenio();
+        if (duenio != null) {
+            duenio.registrarAusencia();
         }
         repositorioTurnos.guardar(turno);
     }
@@ -217,7 +214,7 @@ public class GestorTurnos {
         throw new IllegalStateException("No hay un veterinario de guardia registrado.");
     }
 
-    private LocalDateTime primerHuecoLibre(Veterinario vet, LocalDateTime desde, TipoAtencion tipo, List<Turno> ocupados) {
+    private LocalDateTime primerHuecoLibre(Veterinario vet, LocalDateTime desde, TipoAtencion tipo, List<Turno> ocupados) throws TurnoNoDisponibleException {
         LocalDateTime candidato = desde.truncatedTo(ChronoUnit.MINUTES);
         if (candidato.isBefore(desde)) {
             candidato = candidato.plusMinutes(1);

@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import excepciones.PesoNoRegistradoException;
+import excepciones.VacunaNoAplicableException;
 
 public class Consulta {
 	private LocalDateTime fechaHora;
@@ -35,17 +36,18 @@ public class Consulta {
 		return pesoDelDia > 0;
 	}
 
-	public Tratamiento agregarTratamiento(Producto medicamento, String dosis, String frecuencia, int duracionDias) {
+	public Tratamiento agregarTratamiento(Producto medicamento, int cantidad, String dosis, String frecuencia,
+			int duracionDias) throws PesoNoRegistradoException {
 		verificarEditable();
 		if (!tienePesoRegistrado()) {
 			throw new PesoNoRegistradoException("No se puede indicar un medicamento: no se registró el peso del animal en esta consulta.");
 		}
-		Tratamiento tratamiento = new Tratamiento(medicamento, dosis, frecuencia, duracionDias);
+		Tratamiento tratamiento = new Tratamiento(medicamento, cantidad, dosis, frecuencia, duracionDias);
 		this.tratamientos.add(tratamiento);
 		return tratamiento;
 	}
 
-	public VacunaAplicada aplicarVacuna(Vacuna vacuna, Lote lote) {
+	public VacunaAplicada aplicarVacuna(Vacuna vacuna, Lote lote) throws VacunaNoAplicableException {
 		verificarEditable();
 		if (vacuna == null || lote == null) {
 			throw new IllegalArgumentException("La vacuna y el lote son obligatorios.");
@@ -55,15 +57,19 @@ public class Consulta {
 		}
 		Mascota mascota = turno.getMascota();
 		if (!vacuna.esAptaParaEspecie(mascota.getEspecie())) {
-			throw new IllegalStateException("La vacuna " + vacuna.getNombre() + " no corresponde a la especie " + mascota.getEspecie() + ".");
+			throw new VacunaNoAplicableException("La vacuna " + vacuna.getNombre() + " no corresponde a la especie " + mascota.getEspecie() + ".");
 		}
 		if (!vacuna.esAplicableA(mascota)) {
-			throw new IllegalStateException("La mascota no tiene la edad mínima (" + vacuna.getEdadMinimaMeses()
+			throw new VacunaNoAplicableException("La mascota no tiene la edad mínima (" + vacuna.getEdadMinimaMeses()
 					+ " meses) para la vacuna " + vacuna.getNombre() + ".");
+		}
+		if (!vacuna.usaLote(lote)) {
+			throw new VacunaNoAplicableException("El lote " + lote.getNumeroLote() + " no corresponde al producto de la vacuna "
+					+ vacuna.getNombre() + ".");
 		}
 		LocalDate hoy = LocalDate.now();
 		if (lote.estaVencido(hoy)) {
-			throw new IllegalStateException("El lote " + lote.getNumeroLote() + " está vencido y no puede usarse.");
+			throw new VacunaNoAplicableException("El lote " + lote.getNumeroLote() + " está vencido y no puede usarse.");
 		}
 		VacunaAplicada aplicada = new VacunaAplicada(vacuna, lote, vacuna.proximoRefuerzo(mascota.getEspecie(), hoy));
 		this.vacunas.add(aplicada);

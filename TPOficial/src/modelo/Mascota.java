@@ -10,10 +10,10 @@ public abstract class Mascota {
 	private String sexo;
 	private LocalDate fechaNacimiento;
 	private double pesoActual;
-	private Dueño dueño;
+	private Duenio duenio;
 	private final HistoriaClinica historiaClinica;
 
-	public Mascota(String idMascota, String nombre, String raza, String sexo, LocalDate fechaNacimiento, double pesoActual, Dueño dueño) {
+	public Mascota(String idMascota, String nombre, String raza, String sexo, LocalDate fechaNacimiento, double pesoActual, Duenio duenio) {
 		if (idMascota == null || idMascota.trim().isEmpty()) {
 			throw new IllegalArgumentException("El id de la mascota es obligatorio.");
 		}
@@ -26,30 +26,30 @@ public abstract class Mascota {
 		this.sexo = sexo;
 		this.fechaNacimiento = fechaNacimiento;
 		this.pesoActual = pesoActual;
-		this.dueño = dueño;
+		this.duenio = duenio;
 		this.historiaClinica = new HistoriaClinica("HC-" + idMascota);
 
-		if (dueño != null) {
-			dueño.agregarMascota(this);
+		if (duenio != null) {
+			duenio.agregarMascota(this);
 		}
 	}
 
 	public abstract Especie getEspecie();
 
-	public abstract String getDescripcionEspecie();
+	public abstract String getInfoEspecie();
 
 	public int getEdad() {
 		return fechaNacimiento == null ? 0 : Period.between(fechaNacimiento, LocalDate.now()).getYears();
 	}
 
-	public void cambiarDueño(Dueño nuevo) {
+	public void cambiarDuenio(Duenio nuevo) {
 		if (nuevo == null) {
 			throw new IllegalArgumentException("El nuevo dueño no puede ser nulo.");
 		}
-		if (this.dueño != null) {
-			this.dueño.quitarMascota(this);
+		if (this.duenio != null) {
+			this.duenio.quitarMascota(this);
 		}
-		this.dueño = nuevo;
+		this.duenio = nuevo;
 		nuevo.agregarMascota(this);
 	}
 
@@ -78,16 +78,19 @@ public abstract class Mascota {
 		return pesoActual;
 	}
 
-	public void setPesoActual(double pesoActual) {
-		this.pesoActual = pesoActual;
+	public void actualizarPeso(double peso) {
+		if (peso <= 0) {
+			throw new IllegalArgumentException("El peso debe ser mayor a cero.");
+		}
+		this.pesoActual = peso;
 	}
 
-	public Dueño getDueño() {
-		return dueño;
+	public Duenio getDuenio() {
+		return duenio;
 	}
 
-	public void setDueño(Dueño dueño) {
-		this.dueño = dueño;
+	public void setDuenio(Duenio duenio) {
+		this.duenio = duenio;
 	}
 
 	public HistoriaClinica getHistoriaClinica() {

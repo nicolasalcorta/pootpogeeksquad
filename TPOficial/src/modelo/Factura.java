@@ -6,14 +6,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import excepciones.FacturaAnuladaException;
+
 public class Factura {
     private static final double DESCUENTO_PLAN_SALUD = 0.15;
     private static final AtomicInteger CONTADOR = new AtomicInteger();
 
     private final String numeroFactura;
     private final LocalDateTime fecha;
-    private final Consulta consulta;
-    private final Dueño dueño;
+    private final ConceptoFactura concepto;
+    private final Consulta consulta; // solo para concepto CONSULTA; null en seña o cargo por cancelación
+    private final Duenio duenio;
     private final MedioPago medioPago;
     private final List<LineaFactura> lineas;
     private double total;
@@ -21,16 +24,42 @@ public class Factura {
     private boolean anulada;
     private NotaCredito notaCredito;
 
-    public Factura(Consulta consulta, Dueño dueño, MedioPago medioPago) {
-        if (consulta == null || dueño == null || medioPago == null) {
-            throw new IllegalArgumentException("La consulta, el dueño y el medio de pago son obligatorios.");
+    /** Factura de una consulta atendida. */
+    public Factura(Consulta consulta, Duenio duenio, MedioPago medioPago) {
+        this(ConceptoFactura.CONSULTA, requerirConsulta(consulta), duenio, medioPago);
+    }
+
+    /** Factura de un cargo que no sale de una consulta (seña o cancelación tardía). */
+    public Factura(ConceptoFactura concepto, Duenio duenio, MedioPago medioPago) {
+        this(conceptoSinConsulta(concepto), null, duenio, medioPago);
+    }
+
+    private Factura(ConceptoFactura concepto, Consulta consulta, Duenio duenio, MedioPago medioPago) {
+        if (concepto == null || duenio == null || medioPago == null) {
+            throw new IllegalArgumentException("El concepto, el dueño y el medio de pago son obligatorios.");
         }
         this.numeroFactura = String.format("F-%06d", CONTADOR.incrementAndGet());
         this.fecha = LocalDateTime.now();
+        this.concepto = concepto;
         this.consulta = consulta;
-        this.dueño = dueño;
+        this.duenio = duenio;
         this.medioPago = medioPago;
         this.lineas = new ArrayList<>();
+    }
+
+    // Se validan antes de llamar al constructor privado para no consumir un número de factura.
+    private static Consulta requerirConsulta(Consulta consulta) {
+        if (consulta == null) {
+            throw new IllegalArgumentException("La consulta es obligatoria para facturar una consulta.");
+        }
+        return consulta;
+    }
+
+    private static ConceptoFactura conceptoSinConsulta(ConceptoFactura concepto) {
+        if (concepto == ConceptoFactura.CONSULTA) {
+            throw new IllegalArgumentException("Para facturar una consulta hay que indicar la consulta.");
+        }
+        return concepto;
     }
 
     public LineaFactura agregarLinea(String concepto, int cantidad, double precioUnitario) {
@@ -52,7 +81,7 @@ public class Factura {
 
     public double calcularTotal() {
         double ajuste = medioPago.getPorcentajeAjuste();
-        double descuentoPlan = (dueño.isTienePlanSalud() ? DESCUENTO_PLAN_SALUD : 0.0);
+        double descuentoPlan = (duenio.isTienePlanSalud() ? DESCUENTO_PLAN_SALUD : 0.0);
         double ajusteFinal;
         if (ajuste > 0) {
             ajusteFinal = ajuste - descuentoPlan;
@@ -64,9 +93,9 @@ public class Factura {
         return total;
     }
 
-    public NotaCredito anularConNotaCredito() {
+    public NotaCredito anularConNotaCredito() throws FacturaAnuladaException {
         if (anulada) {
-            throw new IllegalStateException("La factura " + numeroFactura + " ya fue anulada.");
+            throw new FacturaAnuladaException("La factura " + numeroFactura + " ya fue anulada.");
         }
         anulada = true;
         notaCredito = new NotaCredito("NC-" + numeroFactura, total);
@@ -89,12 +118,16 @@ public class Factura {
         return anulada;
     }
 
+    public ConceptoFactura getConcepto() {
+        return concepto;
+    }
+
     public Consulta getConsulta() {
         return consulta;
     }
 
-    public Dueño getDueño() {
-        return dueño;
+    public Duenio getDuenio() {
+        return duenio;
     }
 
     public MedioPago getMedioPago() {

@@ -6,8 +6,8 @@ public class Ave extends Mascota {
 	private boolean puedeVolar;
 
 	public Ave(String idMascota, String nombre, String raza, String sexo, LocalDate fechaNacimiento,
-			   double pesoActual, Dueño dueño, boolean puedeVolar) {
-		super(idMascota, nombre, raza, sexo, fechaNacimiento, pesoActual, dueño);
+			   double pesoActual, Duenio duenio, boolean puedeVolar) {
+		super(idMascota, nombre, raza, sexo, fechaNacimiento, pesoActual, duenio);
 		this.puedeVolar = puedeVolar;
 	}
 
@@ -17,7 +17,7 @@ public class Ave extends Mascota {
 	}
 
 	@Override
-	public String getDescripcionEspecie() {
+	public String getInfoEspecie() {
 		return "Ave [Puede volar: " + (puedeVolar ? "Sí" : "No") + "]";
 	}
 
