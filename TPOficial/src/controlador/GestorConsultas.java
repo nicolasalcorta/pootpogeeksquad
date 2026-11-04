@@ -1,5 +1,9 @@
 package controlador;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 import excepciones.PesoNoRegistradoException;
 import excepciones.StockInsuficienteException;
 import excepciones.VacunaNoAplicableException;
@@ -18,15 +22,46 @@ import modelo.Vacuna;
 import modelo.VacunaAplicada;
 import modelo.Veterinario;
 import repositorio.RepositorioMascotas;
+import repositorio.RepositorioTurnos;
 
 public class GestorConsultas {
     private final RepositorioMascotas repositorioMascotas;
+    private final RepositorioTurnos repositorioTurnos;
+    private final GestorStock gestorStock;
 
-    public GestorConsultas(RepositorioMascotas repositorio) {
-        if (repositorio == null) {
-            throw new IllegalArgumentException("El repositorio es obligatorio.");
+    public GestorConsultas(RepositorioMascotas repositorioMascotas, RepositorioTurnos repositorioTurnos,
+                           GestorStock gestorStock) {
+        if (repositorioMascotas == null || repositorioTurnos == null || gestorStock == null) {
+            throw new IllegalArgumentException("Los repositorios y el gestor de stock son obligatorios.");
         }
-        this.repositorioMascotas = repositorio;
+        this.repositorioMascotas = repositorioMascotas;
+        this.repositorioTurnos = repositorioTurnos;
+        this.gestorStock = gestorStock;
+    }
+
+    /**
+     * Cierra la consulta: descuenta el stock de sus tratamientos y vacunas (GestorStock) y guarda la historia.
+     * Después de confirmada, la consulta no admite cambios y ya se puede facturar.
+     */
+    public void confirmarConsulta(Consulta consulta, Veterinario veterinario) throws StockInsuficienteException {
+        validarConsultaDelVeterinario(consulta, veterinario);
+        gestorStock.confirmarConsumo(consulta);
+        repositorioMascotas.guardar(mascotaDe(consulta));
+    }
+
+    /** Turnos todavía no atendidos del veterinario, ordenados por fecha. */
+    public List<Turno> turnosPendientes(Veterinario veterinario) {
+        if (veterinario == null) {
+            throw new IllegalArgumentException("El veterinario no puede ser nulo.");
+        }
+        List<Turno> pendientes = new ArrayList<>();
+        for (Turno t : repositorioTurnos.buscarPorVeterinario(veterinario)) {
+            if (t.getEstado() == EstadoTurno.PROGRAMADO) {
+                pendientes.add(t);
+            }
+        }
+        pendientes.sort(Comparator.comparing(Turno::getFechaHora));
+        return pendientes;
     }
 
     public Consulta registrarConsulta(Turno turno, Veterinario veterinario, String motivo, double pesoDelDia) {
@@ -62,6 +97,7 @@ public class GestorConsultas {
         if (duenio != null) {
             duenio.reiniciarAusencias();
         }
+        repositorioTurnos.guardar(turno);
         repositorioMascotas.guardar(mascota);
         return consulta;
     }

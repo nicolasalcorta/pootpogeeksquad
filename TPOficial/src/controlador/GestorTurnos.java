@@ -4,50 +4,52 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import excepciones.TurnoNoDisponibleException;
+import modelo.ConceptoFactura;
 import modelo.Duenio;
 import modelo.EstadoTurno;
+import modelo.Factura;
 import modelo.Mascota;
+import modelo.MedioPago;
 import modelo.TipoAtencion;
 import modelo.Turno;
 import modelo.Veterinario;
 import notificacion.Notificador;
+import repositorio.RepositorioPersonal;
 import repositorio.RepositorioTurnos;
 
 public class GestorTurnos {
     private static final int DIAS_DE_BUSQUEDA = 14;
     private static final DateTimeFormatter FORMATO = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
+    /** Porcentaje del precio base que se cobra como seña a los dueños con ausencias reiteradas. */
+    private static final double PORCENTAJE_SENIA = 0.50;
+
     private final RepositorioTurnos repositorioTurnos;
+    private final RepositorioPersonal repositorioPersonal;
     private final Notificador notificador;
-    private final List<Veterinario> veterinarios;
+    private final GestorFacturacion gestorFacturacion;
 
-    public GestorTurnos(RepositorioTurnos repositorio, Notificador notificador) {
-        if (repositorio == null || notificador == null) {
-            throw new IllegalArgumentException("El repositorio y el notificador son obligatorios.");
+    public GestorTurnos(RepositorioTurnos repositorioTurnos, RepositorioPersonal repositorioPersonal,
+                        Notificador notificador, GestorFacturacion gestorFacturacion) {
+        if (repositorioTurnos == null || repositorioPersonal == null || notificador == null || gestorFacturacion == null) {
+            throw new IllegalArgumentException("Los repositorios, el notificador y el gestor de facturación son obligatorios.");
         }
-        this.repositorioTurnos = repositorio;
+        this.repositorioTurnos = repositorioTurnos;
+        this.repositorioPersonal = repositorioPersonal;
         this.notificador = notificador;
-        this.veterinarios = new ArrayList<>();
+        this.gestorFacturacion = gestorFacturacion;
     }
 
-    public void registrarVeterinario(Veterinario veterinario) {
-        if (veterinario == null) {
-            throw new IllegalArgumentException("El veterinario no puede ser nulo.");
-        }
-        if (!veterinarios.contains(veterinario)) {
-            veterinarios.add(veterinario);
-        }
-    }
-
-    public List<Veterinario> getVeterinarios() {
-        return Collections.unmodifiableList(veterinarios);
+    public List<Turno> listarTurnos() {
+        List<Turno> turnos = new ArrayList<>(repositorioTurnos.listarTodos());
+        turnos.sort(Comparator.comparing(Turno::getFechaHora));
+        return turnos;
     }
 
     public Turno asignarTurno(Mascota mascota, Veterinario veterinario, LocalDateTime fechaHora, TipoAtencion tipo) throws TurnoNoDisponibleException {
@@ -74,12 +76,19 @@ public class GestorTurnos {
         return nuevo;
     }
 
-    public void registrarPagoSenia(Turno turno) {
-        if (turno == null) {
-            throw new IllegalArgumentException("El turno no puede ser nulo.");
+    /** Registra el pago de la seña del turno y emite la factura correspondiente. */
+    public Factura registrarSenia(Turno turno, MedioPago medioPago) {
+        if (turno == null || medioPago == null) {
+            throw new IllegalArgumentException("El turno y el medio de pago son obligatorios.");
         }
+        if (turno.isSeniaPagada()) {
+            throw new IllegalStateException("El turno no tiene una seña pendiente.");
+        }
+        Duenio duenio = duenioDe(turno);
         turno.marcarSeniaPagada();
         repositorioTurnos.guardar(turno);
+        double monto = turno.getTipo().getPrecioBase() * PORCENTAJE_SENIA;
+        return gestorFacturacion.emitirFacturaCargo(duenio, ConceptoFactura.SENIA, monto, medioPago);
     }
 
     public Turno asignarUrgencia(Mascota mascota, TipoAtencion tipo) throws TurnoNoDisponibleException {
@@ -158,17 +167,33 @@ public class GestorTurnos {
         repositorioTurnos.guardar(turno);
     }
 
-    public double cancelarTurno(Turno turno) {
-        return cancelarTurno(turno, LocalDateTime.now());
+    /**
+     * Cancela el turno. Si se cancela tarde, factura el cargo por cancelación y devuelve esa factura;
+     * si se cancela a tiempo no hay cargo y devuelve null.
+     */
+    public Factura cancelarTurno(Turno turno, MedioPago medioPago) {
+        return cancelarTurno(turno, medioPago, LocalDateTime.now());
     }
 
-    double cancelarTurno(Turno turno, LocalDateTime momento) {
-        if (turno == null) {
-            throw new IllegalArgumentException("El turno no puede ser nulo.");
+    Factura cancelarTurno(Turno turno, MedioPago medioPago, LocalDateTime momento) {
+        if (turno == null || medioPago == null) {
+            throw new IllegalArgumentException("El turno y el medio de pago son obligatorios.");
         }
+        Duenio duenio = duenioDe(turno); // se valida antes de cancelar para no dejar el turno a medias
         double cargo = turno.cancelar(momento);
         repositorioTurnos.guardar(turno);
-        return cargo;
+        if (cargo <= 0) {
+            return null;
+        }
+        return gestorFacturacion.emitirFacturaCargo(duenio, ConceptoFactura.CARGO_CANCELACION, cargo, medioPago);
+    }
+
+    private Duenio duenioDe(Turno turno) {
+        Duenio duenio = turno.getMascota().getDuenio();
+        if (duenio == null) {
+            throw new IllegalStateException("La mascota del turno no tiene dueño a quien facturar.");
+        }
+        return duenio;
     }
 
     public void marcarAusente(Turno turno) {
@@ -206,7 +231,7 @@ public class GestorTurnos {
     }
 
     private Veterinario buscarVeterinarioDeGuardia() {
-        for (Veterinario v : veterinarios) {
+        for (Veterinario v : repositorioPersonal.listarVeterinarios()) {
             if (v.isDeGuardia()) {
                 return v;
             }

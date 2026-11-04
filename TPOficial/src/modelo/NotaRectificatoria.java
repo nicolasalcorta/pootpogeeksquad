@@ -9,13 +9,21 @@ public class NotaRectificatoria {
     private final Consulta consulta;
 
     public NotaRectificatoria(Consulta consulta, Veterinario firmadaPor, String descripcion) {
+        this(consulta, firmadaPor, descripcion, LocalDateTime.now());
+    }
+
+    /** Recrea una nota ya registrada, con su fecha original (por ejemplo, al leerla de un archivo). */
+    public NotaRectificatoria(Consulta consulta, Veterinario firmadaPor, String descripcion, LocalDateTime fecha) {
+        if (fecha == null) {
+            throw new IllegalArgumentException("La fecha de la nota es obligatoria.");
+        }
         if (consulta == null || firmadaPor == null) {
             throw new IllegalArgumentException("La consulta y el veterinario que firma son obligatorios.");
         }
         if (descripcion == null || descripcion.trim().isEmpty()) {
             throw new IllegalArgumentException("La descripción de la nota no puede estar vacía.");
         }
-        this.fecha = LocalDateTime.now();
+        this.fecha = fecha;
         this.consulta = consulta;
         this.firmadaPor = firmadaPor;
         this.descripcion = descripcion;

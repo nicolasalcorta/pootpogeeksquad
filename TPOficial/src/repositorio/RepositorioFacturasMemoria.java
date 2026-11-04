@@ -1,6 +1,8 @@
 package repositorio;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import modelo.Factura;
@@ -18,5 +20,10 @@ public class RepositorioFacturasMemoria implements RepositorioFacturas {
     @Override
     public Factura buscarPorNumero(String numero) {
         return facturas.get(numero);
+    }
+
+    @Override
+    public List<Factura> listarTodas() {
+        return new ArrayList<>(facturas.values());
     }
 }

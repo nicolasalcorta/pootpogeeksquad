@@ -1,5 +1,7 @@
 package controlador;
 
+import java.util.List;
+
 import modelo.Duenio;
 import modelo.Mascota;
 import repositorio.RepositorioDuenios;
@@ -68,5 +70,13 @@ public class GestorPacientes {
 
     public Duenio buscarDuenioPorDni(String dni) {
         return repositorioDuenios.buscarPorDni(dni);
+    }
+
+    public List<Duenio> listarDuenios() {
+        return repositorioDuenios.listarTodos();
+    }
+
+    public List<Mascota> listarMascotas() {
+        return repositorioMascotas.listarTodas();
     }
 }

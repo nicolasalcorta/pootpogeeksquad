@@ -1,13 +1,18 @@
 package controlador;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import excepciones.RolNoAutorizadoException;
 import excepciones.StockInsuficienteException;
 import modelo.Consulta;
 import modelo.Lote;
+import modelo.Personal;
+import modelo.RolPersonal;
 import modelo.Producto;
 import modelo.Tratamiento;
 import modelo.VacunaAplicada;
@@ -65,6 +70,54 @@ public class GestorStock {
             repositorioProductos.guardar(v.getVacuna().getInsumo());
         }
         consulta.confirmar();
+    }
+
+    public void registrarProducto(Producto producto, Personal usuario) throws RolNoAutorizadoException {
+        if (producto == null) {
+            throw new IllegalArgumentException("El producto no puede ser nulo.");
+        }
+        ValidadorRol.exigir(usuario, RolPersonal.ADMINISTRADOR, "registrar productos");
+        if (repositorioProductos.buscarPorCodigo(producto.getCodigo()) != null) {
+            throw new IllegalArgumentException("Ya existe un producto con el código " + producto.getCodigo() + ".");
+        }
+        repositorioProductos.guardar(producto);
+    }
+
+    public void ingresarLote(Producto producto, Lote lote, Personal usuario) throws RolNoAutorizadoException {
+        if (producto == null || lote == null) {
+            throw new IllegalArgumentException("El producto y el lote son obligatorios.");
+        }
+        ValidadorRol.exigir(usuario, RolPersonal.ADMINISTRADOR, "ingresar lotes");
+        if (repositorioProductos.buscarPorCodigo(producto.getCodigo()) == null) {
+            throw new IllegalArgumentException("El producto " + producto.getCodigo() + " no está registrado.");
+        }
+        for (Lote existente : producto.getLotes()) {
+            if (existente.getNumeroLote().equals(lote.getNumeroLote())) {
+                throw new IllegalArgumentException("El producto ya tiene un lote con el número " + lote.getNumeroLote() + ".");
+            }
+        }
+        producto.agregarLote(lote);
+        repositorioProductos.guardar(producto);
+    }
+
+    /** Lotes que se pueden usar hoy (no vencidos y con unidades), del que vence primero al último. */
+    public List<Lote> lotesDisponibles(Producto producto) {
+        if (producto == null) {
+            throw new IllegalArgumentException("El producto no puede ser nulo.");
+        }
+        LocalDate hoy = LocalDate.now();
+        List<Lote> disponibles = new ArrayList<>();
+        for (Lote l : producto.getLotes()) {
+            if (!l.estaVencido(hoy) && l.getCantidad() > 0) {
+                disponibles.add(l);
+            }
+        }
+        Collections.sort(disponibles);
+        return disponibles;
+    }
+
+    public List<Producto> listarProductos() {
+        return repositorioProductos.listarTodos();
     }
 
     public List<Producto> productosConStockBajo() {
