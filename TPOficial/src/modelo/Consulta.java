@@ -76,6 +76,18 @@ public class Consulta {
 		return aplicada;
 	}
 
+	/**
+	 * Vuelve a incorporar una vacuna ya aplicada, sin repetir las validaciones de aplicarVacuna()
+	 * (que dependen de la fecha de hoy). Se usa al leer la historia clínica de un archivo.
+	 */
+	public void restaurarVacunaAplicada(VacunaAplicada aplicada) {
+		verificarEditable();
+		if (aplicada == null) {
+			throw new IllegalArgumentException("La vacuna aplicada no puede ser nula.");
+		}
+		this.vacunas.add(aplicada);
+	}
+
 	public void confirmar() {
 		if (confirmada) {
 			throw new IllegalStateException("La consulta ya fue confirmada.");

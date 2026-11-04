@@ -9,12 +9,17 @@ public class VacunaAplicada {
 	private final LocalDate fechaProximoRefuerzo;
 
 	public VacunaAplicada(Vacuna vacuna, Lote lote, LocalDate fechaProximoRefuerzo) {
-		if (vacuna == null || lote == null) {
-			throw new IllegalArgumentException("La vacuna y el lote son obligatorios.");
+		this(vacuna, lote, LocalDate.now(), fechaProximoRefuerzo);
+	}
+
+	/** Recrea una vacuna ya aplicada, con su fecha original (por ejemplo, al leerla de un archivo). */
+	public VacunaAplicada(Vacuna vacuna, Lote lote, LocalDate fechaAplicacion, LocalDate fechaProximoRefuerzo) {
+		if (vacuna == null || lote == null || fechaAplicacion == null) {
+			throw new IllegalArgumentException("La vacuna, el lote y la fecha de aplicación son obligatorios.");
 		}
 		this.vacuna = vacuna;
 		this.lote = lote;
-		this.fechaAplicacion = LocalDate.now();
+		this.fechaAplicacion = fechaAplicacion;
 		this.fechaProximoRefuerzo = fechaProximoRefuerzo;
 	}
 

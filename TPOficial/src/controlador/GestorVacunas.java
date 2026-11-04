@@ -7,22 +7,32 @@ import java.util.List;
 
 import modelo.Consulta;
 import modelo.Mascota;
+import modelo.Vacuna;
 import modelo.VacunaAplicada;
 import notificacion.Notificador;
 import repositorio.RepositorioMascotas;
+import repositorio.RepositorioVacunas;
 
 public class GestorVacunas {
     private static final DateTimeFormatter FORMATO = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final RepositorioMascotas repositorioMascotas;
+    private final RepositorioVacunas repositorioVacunas;
     private final Notificador notificador;
 
-    public GestorVacunas(RepositorioMascotas repositorio, Notificador notificador) {
-        if (repositorio == null || notificador == null) {
-            throw new IllegalArgumentException("El repositorio y el notificador son obligatorios.");
+    public GestorVacunas(RepositorioMascotas repositorioMascotas, RepositorioVacunas repositorioVacunas,
+                         Notificador notificador) {
+        if (repositorioMascotas == null || repositorioVacunas == null || notificador == null) {
+            throw new IllegalArgumentException("Los repositorios y el notificador son obligatorios.");
         }
-        this.repositorioMascotas = repositorio;
+        this.repositorioMascotas = repositorioMascotas;
+        this.repositorioVacunas = repositorioVacunas;
         this.notificador = notificador;
+    }
+
+    /** Vacunas disponibles para aplicar (catálogo). */
+    public List<Vacuna> listarCatalogo() {
+        return repositorioVacunas.listarTodas();
     }
 
     public List<VacunaAplicada> vacunasProximasAVencer() {

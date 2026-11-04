@@ -33,6 +33,14 @@ public class HistoriaClinica {
 		return nota;
 	}
 
+	/** Vuelve a incorporar una nota ya registrada (por ejemplo, al leer la historia de un archivo). */
+	public void restaurarNota(NotaRectificatoria nota) {
+		if (nota == null || !consultas.contains(nota.getConsulta())) {
+			throw new IllegalArgumentException("La nota no corresponde a una consulta de esta historia clínica.");
+		}
+		notas.add(nota);
+	}
+
 	public List<Consulta> getConsultas() {
 		return Collections.unmodifiableList(consultas);
 	}

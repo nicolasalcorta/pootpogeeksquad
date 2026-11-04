@@ -8,8 +8,13 @@ public class NotaCredito {
     private final double monto;
 
     public NotaCredito(String numero, double monto) {
+        this(numero, LocalDateTime.now(), monto);
+    }
+
+    /** Recrea una nota de crédito ya emitida (por ejemplo, al leerla de un archivo). */
+    public NotaCredito(String numero, LocalDateTime fecha, double monto) {
         this.numero = numero;
-        this.fecha = LocalDateTime.now();
+        this.fecha = fecha;
         this.monto = monto;
     }
 
