@@ -49,6 +49,45 @@ public class GestorConsultas {
         repositorioMascotas.guardar(mascotaDe(consulta));
     }
 
+    /** Consultas atendidas por el veterinario (abiertas y confirmadas), de la más reciente a la más antigua. */
+    public List<Consulta> consultasDelVeterinario(Veterinario veterinario) {
+        if (veterinario == null) {
+            throw new IllegalArgumentException("El veterinario no puede ser nulo.");
+        }
+        List<Consulta> resultado = new ArrayList<>();
+        for (Mascota m : repositorioMascotas.listarTodas()) {
+            for (Consulta c : m.getHistoriaClinica().getConsultas()) {
+                if (c.getVeterinario() != null && c.getVeterinario().getDni().equals(veterinario.getDni())) {
+                    resultado.add(c);
+                }
+            }
+        }
+        resultado.sort(Comparator.comparing(Consulta::getFechaHora).reversed());
+        return resultado;
+    }
+
+    /** Consultas confirmadas que todavía no tienen una factura vigente. */
+    public List<Consulta> consultasPendientesDeFacturar() {
+        List<Consulta> resultado = new ArrayList<>();
+        for (Mascota m : repositorioMascotas.listarTodas()) {
+            for (Consulta c : m.getHistoriaClinica().getConsultas()) {
+                if (c.isConfirmada() && (c.getFactura() == null || c.getFactura().isAnulada())) {
+                    resultado.add(c);
+                }
+            }
+        }
+        resultado.sort(Comparator.comparing(Consulta::getFechaHora));
+        return resultado;
+    }
+
+    /** Registra el diagnóstico y las observaciones de una consulta abierta. */
+    public void registrarDiagnostico(Consulta consulta, Veterinario veterinario, String diagnostico, String observaciones) {
+        validarConsultaDelVeterinario(consulta, veterinario);
+        consulta.setDiagnostico(diagnostico == null ? "" : diagnostico.trim());
+        consulta.setObservaciones(observaciones == null ? "" : observaciones.trim());
+        repositorioMascotas.guardar(mascotaDe(consulta));
+    }
+
     /** Turnos todavía no atendidos del veterinario, ordenados por fecha. */
     public List<Turno> turnosPendientes(Veterinario veterinario) {
         if (veterinario == null) {
