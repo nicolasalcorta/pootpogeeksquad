@@ -1,0 +1,4 @@
+P;MED-001;Amoxicilina 500 mg;10;1200.0
+L;MED-001;AMX-2401;2027-07-04;40
+P;VAC-001;Vacuna antirrábica (dosis);5;8500.0
+L;VAC-001;RAB-2401;2027-11-04;20
