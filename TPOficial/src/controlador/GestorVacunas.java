@@ -43,14 +43,23 @@ public class GestorVacunas {
         return resultado;
     }
 
-    public void emitirRecordatorios() {
+    /**
+     * Avisa a los dueños de los refuerzos próximos a vencer que todavía no fueron avisados.
+     * Devuelve cuántos recordatorios se enviaron.
+     */
+    public int emitirRecordatorios() {
+        int enviados = 0;
         for (Pendiente p : buscarPendientes()) {
-            if (p.mascota.getDuenio() != null) {
+            if (p.mascota.getDuenio() != null && !p.vacuna.isRecordatorioEnviado()) {
                 notificador.notificar(p.mascota.getDuenio(),
                         "Recordatorio: el refuerzo de la vacuna " + p.vacuna.getNombreVacuna() + " de " + p.mascota.getNombre()
                                 + " vence el " + p.vacuna.getFechaProximoRefuerzo().format(FORMATO) + ".");
+                p.vacuna.marcarRecordatorioEnviado();
+                repositorioMascotas.guardar(p.mascota);
+                enviados++;
             }
         }
+        return enviados;
     }
 
     private List<Pendiente> buscarPendientes() {

@@ -7,6 +7,7 @@ public class VacunaAplicada {
 	private final Lote lote;
 	private final LocalDate fechaAplicacion;
 	private final LocalDate fechaProximoRefuerzo;
+	private boolean recordatorioEnviado;
 
 	public VacunaAplicada(Vacuna vacuna, Lote lote, LocalDate fechaProximoRefuerzo) {
 		this(vacuna, lote, LocalDate.now(), fechaProximoRefuerzo);
@@ -31,6 +32,15 @@ public class VacunaAplicada {
 	public boolean estaVencida(LocalDate hoy) {
 		if (fechaProximoRefuerzo == null) return false;
 		return hoy.isAfter(fechaProximoRefuerzo.plusDays(30));
+	}
+
+	/** Registra que ya se avisó al dueño de este refuerzo, para no repetir el recordatorio. */
+	public void marcarRecordatorioEnviado() {
+		this.recordatorioEnviado = true;
+	}
+
+	public boolean isRecordatorioEnviado() {
+		return recordatorioEnviado;
 	}
 
 	public Vacuna getVacuna() {

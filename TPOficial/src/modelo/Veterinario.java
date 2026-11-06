@@ -39,6 +39,16 @@ public class Veterinario extends Personal {
 		return false;
 	}
 
+	/** Indica si un mismo horario de atención cubre todo el período [inicio, fin). */
+	public boolean atiendeEntre(LocalDateTime inicio, LocalDateTime fin) {
+		for (HorarioAtencion h : horarios) {
+			if (h.incluye(inicio) && h.incluye(fin.minusMinutes(1))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public String getMatricula() {
 		return matricula;
 	}

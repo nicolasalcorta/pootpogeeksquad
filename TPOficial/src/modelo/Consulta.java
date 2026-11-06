@@ -71,6 +71,11 @@ public class Consulta {
 		if (lote.estaVencido(hoy)) {
 			throw new VacunaNoAplicableException("El lote " + lote.getNumeroLote() + " está vencido y no puede usarse.");
 		}
+		// Las dosis se descuentan al confirmar: se cuentan también las ya usadas en esta consulta.
+		long usadasEnEstaConsulta = vacunas.stream().filter(v -> v.getLote() == lote).count();
+		if (lote.getCantidad() - usadasEnEstaConsulta <= 0) {
+			throw new VacunaNoAplicableException("El lote " + lote.getNumeroLote() + " no tiene dosis disponibles.");
+		}
 		VacunaAplicada aplicada = new VacunaAplicada(vacuna, lote, vacuna.proximoRefuerzo(mascota.getEspecie(), hoy));
 		this.vacunas.add(aplicada);
 		return aplicada;

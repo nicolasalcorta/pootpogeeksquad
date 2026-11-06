@@ -158,6 +158,9 @@ public class GestorConsultas {
         if (medicamento == null) {
             throw new IllegalArgumentException("El medicamento es obligatorio.");
         }
+        if (cantidad <= 0) {
+            throw new IllegalArgumentException("La cantidad de unidades debe ser mayor a cero.");
+        }
         // Primero el peso (lo valida Consulta y lanza PesoNoRegistradoException); después el stock.
         if (consulta.tienePesoRegistrado() && !medicamento.tieneStock(cantidad)) {
             throw new StockInsuficienteException("No hay stock suficiente de " + medicamento.getNombre()

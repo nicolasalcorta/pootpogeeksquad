@@ -88,6 +88,10 @@ public class GestorStock {
             throw new IllegalArgumentException("El producto y el lote son obligatorios.");
         }
         ValidadorRol.exigir(usuario, RolPersonal.ADMINISTRADOR, "ingresar lotes");
+        if (lote.estaVencido(LocalDate.now())) {
+            throw new IllegalArgumentException("El lote " + lote.getNumeroLote() + " ya está vencido ("
+                    + lote.getFechaVencimiento() + ") y no se puede ingresar.");
+        }
         if (repositorioProductos.buscarPorCodigo(producto.getCodigo()) == null) {
             throw new IllegalArgumentException("El producto " + producto.getCodigo() + " no está registrado.");
         }

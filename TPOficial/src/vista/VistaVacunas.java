@@ -2,7 +2,6 @@ package vista;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.JPanel;
@@ -63,14 +62,10 @@ public class VistaVacunas extends VistaBase {
     }
 
     private void onEmitirRecordatorios() {
-        List<VacunaAplicada> pendientes = gestorVacunas.vacunasProximasAVencer();
-        if (pendientes.isEmpty()) {
-            mostrarMensaje("No hay recordatorios para enviar.");
-            return;
-        }
         ejecutar(() -> {
-            gestorVacunas.emitirRecordatorios();
-            mostrarMensaje("Se enviaron " + pendientes.size() + " recordatorio(s) a los dueños.");
+            int enviados = gestorVacunas.emitirRecordatorios();
+            mostrarMensaje(enviados == 0 ? "No hay recordatorios nuevos para enviar."
+                    : "Se enviaron " + enviados + " recordatorio(s) a los dueños.");
         });
     }
 
