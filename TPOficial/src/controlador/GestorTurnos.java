@@ -53,9 +53,15 @@ public class GestorTurnos {
     }
 
     public Turno asignarTurno(Mascota mascota, Veterinario veterinario, LocalDateTime fechaHora, TipoAtencion tipo) throws TurnoNoDisponibleException {
+        return asignarTurno(mascota, veterinario, fechaHora, tipo, LocalDateTime.now());
+    }
+
+    Turno asignarTurno(Mascota mascota, Veterinario veterinario, LocalDateTime fechaHora, TipoAtencion tipo,
+                       LocalDateTime ahora) throws TurnoNoDisponibleException {
         if (mascota == null || veterinario == null || fechaHora == null || tipo == null) {
             throw new IllegalArgumentException("La mascota, el veterinario, la fecha y el tipo de atención son obligatorios.");
         }
+        validarNoEsPasado(fechaHora, ahora);
         LocalDateTime fin = fechaHora.plusMinutes(tipo.getDuracionMinutos());
         if (!entraEnHorario(veterinario, fechaHora, fin)) {
             throw new TurnoNoDisponibleException("El veterinario " + veterinario.getNombreCompleto()
@@ -67,6 +73,7 @@ public class GestorTurnos {
             throw new TurnoNoDisponibleException("El horario " + fechaHora.format(FORMATO)
                     + " se superpone con otro turno de " + veterinario.getNombreCompleto() + ".");
         }
+        validarMascotaLibre(nuevo, null);
 
         Duenio duenio = mascota.getDuenio();
         if (duenio != null && duenio.debePagarSenia()) {
@@ -151,18 +158,24 @@ public class GestorTurnos {
     }
 
     public void reprogramarTurno(Turno turno, LocalDateTime nuevaFechaHora) throws TurnoNoDisponibleException {
+        reprogramarTurno(turno, nuevaFechaHora, LocalDateTime.now());
+    }
+
+    void reprogramarTurno(Turno turno, LocalDateTime nuevaFechaHora, LocalDateTime ahora) throws TurnoNoDisponibleException {
         if (turno == null || nuevaFechaHora == null) {
             throw new IllegalArgumentException("El turno y la nueva fecha son obligatorios.");
         }
         if (turno.getEstado() != EstadoTurno.PROGRAMADO) {
             throw new IllegalStateException("Solo se puede reprogramar un turno programado.");
         }
+        validarNoEsPasado(nuevaFechaHora, ahora);
         Veterinario vet = turno.getVeterinario();
         Turno hipotetico = new Turno(nuevaFechaHora, turno.getTipo(), turno.getMascota(), vet, turno.isEsUrgencia());
         if (!entraEnHorario(vet, nuevaFechaHora, hipotetico.getFechaHoraFin()) || haySuperposicion(hipotetico, vet, turno)) {
             // El turno queda como estaba.
             throw new TurnoNoDisponibleException("El horario " + nuevaFechaHora.format(FORMATO) + " no está disponible.");
         }
+        validarMascotaLibre(hipotetico, turno);
         turno.reprogramar(nuevaFechaHora);
         repositorioTurnos.guardar(turno);
     }
@@ -197,8 +210,16 @@ public class GestorTurnos {
     }
 
     public void marcarAusente(Turno turno) {
-        if (turno == null) {
-            throw new IllegalArgumentException("El turno no puede ser nulo.");
+        marcarAusente(turno, LocalDateTime.now());
+    }
+
+    void marcarAusente(Turno turno, LocalDateTime ahora) {
+        if (turno == null || ahora == null) {
+            throw new IllegalArgumentException("El turno y el momento son obligatorios.");
+        }
+        if (ahora.isBefore(turno.getFechaHora())) {
+            throw new IllegalStateException("Todavía no llegó la hora del turno: se puede marcar ausente desde el "
+                    + turno.getFechaHora().format(FORMATO) + ".");
         }
         turno.marcarAusente();
         Duenio duenio = turno.getMascota().getDuenio();
@@ -226,8 +247,26 @@ public class GestorTurnos {
         return false;
     }
 
+    /** El turno entero tiene que caer dentro de UN mismo horario de atención (no puede cruzar un corte). */
     private boolean entraEnHorario(Veterinario vet, LocalDateTime inicio, LocalDateTime fin) {
-        return vet.atiendeEnHorario(inicio) && vet.atiendeEnHorario(fin.minusMinutes(1));
+        return vet.atiendeEntre(inicio, fin);
+    }
+
+    private void validarNoEsPasado(LocalDateTime fechaHora, LocalDateTime ahora) throws TurnoNoDisponibleException {
+        if (fechaHora.isBefore(ahora)) {
+            throw new TurnoNoDisponibleException("No se pueden dar turnos en el pasado (" + fechaHora.format(FORMATO) + ").");
+        }
+    }
+
+    /** Una mascota no puede tener dos turnos programados que se superpongan, aunque sean con distintos veterinarios. */
+    private void validarMascotaLibre(Turno candidato, Turno ignorar) throws TurnoNoDisponibleException {
+        for (Turno existente : repositorioTurnos.listarTodos()) {
+            if (existente != ignorar && existente.getMascota() == candidato.getMascota()
+                    && existente.getEstado() == EstadoTurno.PROGRAMADO && candidato.seSuperponeCon(existente)) {
+                throw new TurnoNoDisponibleException(candidato.getMascota().getNombre() + " ya tiene un turno el "
+                        + existente.getFechaHora().format(FORMATO) + " con " + existente.getVeterinario().getNombreCompleto() + ".");
+            }
+        }
     }
 
     private Veterinario buscarVeterinarioDeGuardia() {

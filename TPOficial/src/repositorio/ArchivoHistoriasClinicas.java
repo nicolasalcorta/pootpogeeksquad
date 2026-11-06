@@ -28,7 +28,7 @@ import modelo.Veterinario;
  * Tipos de línea:
  * C;idMascota;fechaHora;motivo;peso;diagnostico;observaciones;dniVeterinario;fechaHoraTurno;confirmada
  * T;idMascota;nroConsulta;codigoProducto;cantidad;dosis;frecuencia;duracionDias
- * V;idMascota;nroConsulta;nombreVacuna;numeroLote;fechaAplicacion;fechaProximoRefuerzo
+ * V;idMascota;nroConsulta;nombreVacuna;numeroLote;fechaAplicacion;fechaProximoRefuerzo;recordatorioEnviado
  * N;idMascota;nroConsulta;fecha;dniVeterinario;descripcion
  */
 public class ArchivoHistoriasClinicas extends ArchivoTexto {
@@ -55,7 +55,7 @@ public class ArchivoHistoriasClinicas extends ArchivoTexto {
                 }
                 for (VacunaAplicada v : c.getVacunas()) {
                     lineas.add(unir("V", m.getIdMascota(), i, v.getVacuna().getNombre(), v.getLote().getNumeroLote(),
-                            v.getFechaAplicacion(), v.getFechaProximoRefuerzo()));
+                            v.getFechaAplicacion(), v.getFechaProximoRefuerzo(), v.isRecordatorioEnviado()));
                 }
             }
             for (NotaRectificatoria n : historia.getNotas()) {
@@ -106,8 +106,12 @@ public class ArchivoHistoriasClinicas extends ArchivoTexto {
                             throw new IllegalStateException("No existe la vacuna " + c[3] + ".");
                         }
                         LocalDate refuerzo = c[6].isEmpty() ? null : LocalDate.parse(c[6]);
-                        consulta(mascota, c[2]).restaurarVacunaAplicada(
-                                new VacunaAplicada(vacuna, buscarLote(vacuna, c[4]), LocalDate.parse(c[5]), refuerzo));
+                        VacunaAplicada aplicada = new VacunaAplicada(vacuna, buscarLote(vacuna, c[4]), LocalDate.parse(c[5]), refuerzo);
+                        // Campo agregado después: los archivos anteriores no lo tienen y se toman como "no enviado".
+                        if (c.length > 7 && Boolean.parseBoolean(c[7])) {
+                            aplicada.marcarRecordatorioEnviado();
+                        }
+                        consulta(mascota, c[2]).restaurarVacunaAplicada(aplicada);
                         break;
                     case "N":
                         Veterinario firma = veterinario(personal, c[4]);
